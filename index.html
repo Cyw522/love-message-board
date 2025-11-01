@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阿雯与阿常的留言板</title>
+    <style>
+        /* 全局样式 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #ff6b6b;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        /* 容器样式 */
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* 主内容区 */
+        .content {
+            z-index: 1;
+            text-align: center;
+            max-width: 800px;
+            padding: 20px;
+        }
+        
+        /* 标题样式 */
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            background-color: #fff;
+            color: #ff6b6b;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        /* 心形背景动画 */
+        .heart-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.1;
+        }
+        
+        /* 动画效果 */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            color: #333;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        .modal-title {
+            color: #ff6b6b;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        /* 轮盘样式 */
+        .wheel-container {
+            width: 400px;
+            height: 400px;
+            margin: 0 auto 30px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .wheel {
+            width: 380px;
+            height: 380px;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 8px solid white;
+            transition: transform 3s ease;
+        }
+        
+        .wheel-section {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: bottom right;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            writing-mode: vertical-lr;
+            text-orientation: upright;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .wheel-section:nth-child(1) {
+            background-color: #ff6b6b;
+            transform: rotate(0deg);
+        }
+        
+        .wheel-section:nth-child(2) {
+            background-color: #4ecdc4;
+            transform: rotate(60deg);
+        }
+        
+        .wheel-section:nth-child(3) {
+            background-color: #45b7d1;
+            transform: rotate(120deg);
+        }
+        
+        .wheel-section:nth-child(4) {
+            background-color: #96ceb4;
+            transform: rotate(180deg);
+        }
+        
+        .wheel-section:nth-child(5) {
+            background-color: #feca57;
+            transform: rotate(240deg);
+        }
+        
+        .wheel-section:nth-child(6) {
+            background-color: #ff9ff3;
+            transform: rotate(300deg);
+        }
+        
+        .spin-button {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #fff;
+            color: #ff6b6b;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 5;
+        }
+        
+        .spin-button:hover:not(:disabled) {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        
+        .spin-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .prize-result {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ffffff !important;
+            background-color: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 100;
+            position: relative;
+        }
+        
+        /* 表单样式 */
+        .modal-form {
+            margin-top: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+        }
+        
+        .submit-button {
+            width: 100%;
+            padding: 15px;
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .submit-button:hover {
+            background-color: #ff5252;
+        }
+        
+        .modal-message {
+            text-align: center;
+            color: #666;
+            margin-top: 20px;
+            font-style: italic;
+        }
+        
+        /* 音乐控制按钮 */
+        .music-control {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        
+        .music-control:hover {
+            transform: scale(1.1);
+        }
+        
+        .music-icon {
+            width: 30px;
+            height: 30px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ff6b6b"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        
+        .music-icon.paused {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ff6b6b"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>');
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .wheel-container {
+                width: 300px;
+                height: 300px;
+            }
+            
+            .wheel {
+                width: 280px;
+                height: 280px;
+            }
+            
+            .spin-button {
+                width: 80px;
+                height: 80px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 心形背景动画 -->
+        <canvas class="heart-bg" id="heartCanvas"></canvas>
+        
+        <!-- 主内容区 -->
+        <div class="content">
+            <h1>阿雯与阿常的留言板</h1>
+            <p>点击下方按钮，给阿常留言吧~</p>
+            <button class="btn" id="openModalBtn">打开留言板</button>
+        </div>
+    </div>
+    
+    <!-- 音乐控制按钮 -->
+    <div class="music-control" id="musicControl">
+        <div class="music-icon" id="musicIcon"></div>
+    </div>
+    
+    <!-- 模态框 -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+                    <h2 class="modal-title">阿雯与阿常的留言板</h2>
+                    
+                    <!-- 幸运轮盘 -->
+                    <div class="wheel-container">
+                        <div id="wheel" class="wheel">
+                            <div class="wheel-section" style="--index:0">奶茶</div>
+                            <div class="wheel-section" style="--index:1">小蛋糕</div>
+                            <div class="wheel-section" style="--index:2">项链</div>
+                            <div class="wheel-section" style="--index:3">给阿常说早安</div>
+                            <div class="wheel-section" style="--index:4">零食礼包</div>
+                            <div class="wheel-section" style="--index:5">花</div>
+                        </div>
+                        <!-- 指针已移除 -->
+                        <button id="spin-button" class="spin-button">幸运转盘</button>
+                        <p id="prize-result" class="prize-result"></p>
+                    </div>
+                    
+                    <form id="modal-form" class="modal-form">
+                        <div class="form-group">
+                            <label for="address" class="form-label">地址</label>
+                            <input type="text" id="address" name="address" placeholder="请输入您的地址" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone" class="form-label">手机号码</label>
+                            <input type="tel" id="phone" name="phone" placeholder="请输入您的手机号" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="milk-tea" class="form-label">今天想对阿常说的话</label>
+                            <input type="text" id="milk-tea" name="milk-tea" placeholder="请输入您想对阿常说的话" class="form-input" required>
+                        </div>
+                        <input type="hidden" id="prize" name="prize" value="">
+                        <button type="submit" class="submit-button">确定</button>
+                    </form>
+                    <p class="modal-message">填写地址和想对阿常说的话，可以获得幸运礼包哦~</p>
+                </div>
+    </div>
+    
+    <!-- 音乐元素 (默认隐藏) -->
+    <audio id="backgroundMusic" loop>
+        <source src="https://github.com/Cyw522/love-message-board/raw/main/%E6%81%8B%E4%BA%BA.mp3" type="audio/mpeg">
+        您的浏览器不支持音频元素。
+    </audio>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 使用改进的算法生成心形曲线点
+            function generateHeartPoints(scale = 1) {
+                const points = [];
+                const tStep = 0.01;
+                
+                for (let t = 0; t <= 2 * Math.PI; t += tStep) {
+                    // 心形曲线的参数方程
+                    const x = 16 * Math.pow(Math.sin(t), 3);
+                    const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+                    
+                    // 缩放并转换为画布坐标系
+                    points.push({
+                        x: x * scale,
+                        y: -y * scale // 负号是因为画布Y轴向下
+                    });
+                }
+                
+                return points;
+            }
+            
+            // 绘制心形动画
+            function drawHearts() {
+                const canvas = document.getElementById('heartCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                // 设置画布大小
+                function resizeCanvas() {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                }
+                
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+                
+                // 心形粒子数组
+                const hearts = [];
+                
+                // 创建心形粒子
+                function createHeart() {
+                    return {
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        size: Math.random() * 0.5 + 0.5,
+                        speedX: (Math.random() - 0.5) * 2,
+                        speedY: (Math.random() - 0.5) * 2,
+                        color: `rgba(${255}, ${Math.floor(Math.random() * 100)}, ${Math.floor(Math.random() * 100)}, ${Math.random() * 0.5 + 0.3})`,
+                        rotation: Math.random() * Math.PI * 2,
+                        rotationSpeed: (Math.random() - 0.5) * 0.02
+                    };
+                }
+                
+                // 初始化心形粒子
+                for (let i = 0; i < 50; i++) {
+                    hearts.push(createHeart());
+                }
+                
+                // 主动画循环
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // 更新和绘制每个心形
+                    hearts.forEach(heart => {
+                        // 更新位置
+                        heart.x += heart.speedX;
+                        heart.y += heart.speedY;
+                        heart.rotation += heart.rotationSpeed;
+                        
+                        // 边界检查 - 从相反方向重新进入
+                        if (heart.x < -100) heart.x = canvas.width + 100;
+                        if (heart.x > canvas.width + 100) heart.x = -100;
+                        if (heart.y < -100) heart.y = canvas.height + 100;
+                        if (heart.y > canvas.height + 100) heart.y = -100;
+                        
+                        // 保存当前状态
+                        ctx.save();
+                        
+                        // 移动到心形中心并应用旋转
+                        ctx.translate(heart.x, heart.y);
+                        ctx.rotate(heart.rotation);
+                        
+                        // 设置颜色
+                        ctx.fillStyle = heart.color;
+                        
+                        // 绘制心形
+                        const points = generateHeartPoints(heart.size);
+                        ctx.beginPath();
+                        ctx.moveTo(points[0].x, points[0].y);
+                        for (let i = 1; i < points.length; i++) {
+                            ctx.lineTo(points[i].x, points[i].y);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // 恢复状态
+                        ctx.restore();
+                    });
+                    
+                    // 请求下一帧动画
+                    requestAnimationFrame(animate);
+                }
+                
+                // 开始动画
+                animate();
+            }
+            
+            // 模态框控制
+            function setupModal() {
+                const modal = document.getElementById('modal');
+                const openModalBtn = document.getElementById('openModalBtn');
+                
+                // 打开模态框
+                openModalBtn.addEventListener('click', function() {
+                    modal.classList.add('active');
+                    // 播放音乐
+                    document.getElementById('backgroundMusic').play().catch(e => console.log('音乐播放失败:', e));
+                });
+                
+                // 点击模态框外部关闭
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                    }
+                });
+            }
+            
+            // 音乐控制
+            function setupMusic() {
+                const music = document.getElementById('backgroundMusic');
+                const musicControl = document.getElementById('musicControl');
+                const musicIcon = document.getElementById('musicIcon');
+                let isPlaying = false;
+                
+                // 尝试自动播放音乐（可能会被浏览器阻止）
+                music.play().catch(e => {
+                    console.log('自动播放被阻止，等待用户交互后播放');
+                });
+                
+                // 音乐控制按钮
+                musicControl.addEventListener('click', function() {
+                    if (isPlaying) {
+                        music.pause();
+                        musicIcon.classList.add('paused');
+                    } else {
+                        music.play().catch(e => console.log('音乐播放失败:', e));
+                        musicIcon.classList.remove('paused');
+                    }
+                    isPlaying = !isPlaying;
+                });
+            }
+            
+            // 邮件发送功能（模拟）
+            async function sendEmail(data) {
+                const recipientEmail = 'chang@example.com';
+                const emailSubject = '来自阿雯的留言';
+                const emailBody = `
+                    新的留言：
+                    地址: ${data.address}
+                    手机号: ${data.phone}
+                    留言内容: ${data.message}
+                    奖品: ${data.prize}
+                `.trim();
+                
+                try {
+                    // 在实际项目中，这里应该调用后端API来发送邮件
+                    // 现在只是模拟API调用
+                    const response = await fetch('https://api.example.com/send-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            to: recipientEmail,
+                            subject: emailSubject,
+                            body: emailBody
+                        }),
+                        // 5秒超时
+                        signal: AbortSignal.timeout(5000)
+                    });
+                       
+                    if (!response.ok) {
+                        throw new Error('API响应失败: ' + response.status);
+                    }
+                       
+                    const result = await response.json();
+                    console.log('邮件发送结果:', result);
+                    return result;
+                } catch (error) {
+                    console.error('邮件发送失败:', error);
+                    return {
+                        success: false,
+                        message: '邮件发送失败，请稍后重试',
+                        error: error.message
+                    };
+                }
+            }
+            
+            // 幸运轮盘功能
+            const wheel = document.getElementById('wheel');
+            const spinButton = document.getElementById('spin-button');
+            const prizeResult = document.getElementById('prize-result');
+            const prizeInput = document.getElementById('prize');
+            
+            // 奖品列表 - 与HTML中轮盘扇区显示的奖品保持一致
+            const prizes = ['奶茶', '小蛋糕', '项链', '给阿常说早安', '零食礼包', '花'];
+            let spinning = false;
+            
+            spinButton.addEventListener('click', function() {
+                if (spinning) return;
+                
+                spinning = true;
+                spinButton.disabled = true;
+                prizeResult.textContent = '';
+                
+                // 计算随机旋转角度（5-8圈）
+                const totalSpins = 5 + Math.random() * 3;
+                const randomAngle = Math.random() * 360;
+                const angle = totalSpins * 360 + randomAngle;
+                
+                // 应用旋转动画
+                wheel.style.transform = `rotate(${angle}deg)`;
+                
+                // 动画结束后计算并显示结果
+                setTimeout(() => {
+                    // 计算旋转后的实际角度（取模360）
+                    const finalAngle = angle % 360;
+                    
+                    // 确保结果准确跟随顶部位置
+                    // 每个扇区60度，以顶部为参考点
+                    // 计算方法：从顶部开始，顺时针计算属于哪个扇区
+                    let prizeIndex = Math.floor((360 - finalAngle) / 60) % prizes.length;
+                    
+                    // 调整索引使其与HTML中扇区的实际顺序一致
+                    // HTML中扇区是按顺时针排列的：奶茶(0°)、小蛋糕(60°)、项链(120°)等
+                    prizeIndex = prizeIndex === 0 ? 0 : prizeIndex;
+                    
+                    let prize = prizes[prizeIndex];
+                    // 如果中奖是项链，特殊处理显示
+                    if (prize === '项链') {
+                        prizeResult.textContent = `恭喜获得: 一月后刷新`;
+                    } else {
+                        prizeResult.textContent = `恭喜获得: ${prize}`;
+                    }
+                    prizeInput.value = prize;
+                    spinning = false;
+                    spinButton.disabled = false;
+                }, 3000);
+            });
+            
+            // 模态框表单提交处理
+            const modalForm = document.getElementById('modal-form');
+            modalForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // 检查是否已经抽奖
+                if (!prizeInput.value) {
+                    alert('请先转动幸运轮盘！');
+                    return;
+                }
+                
+                // 获取表单数据
+                const address = document.getElementById('address').value;
+                const phone = document.getElementById('phone').value;
+                const message = document.getElementById('milk-tea').value;
+                const prize = prizeInput.value;
+                
+                // 可以在这里添加数据处理逻辑
+                console.log('地址:', address);
+                console.log('手机号:', phone);
+                console.log('想对阿常说的话:', message);
+                console.log('奖品:', prize);
+                
+                // 显示加载状态
+                const submitButton = this.querySelector('button[type="submit"]');
+                const originalText = submitButton.textContent;
+                submitButton.disabled = true;
+                submitButton.textContent = '提交中...';
+                
+                try {
+                    // 模拟发送数据
+                    const result = await sendEmail({
+                        address,
+                        phone,
+                        message,
+                        prize
+                    });
+                    
+                    // 显示成功消息
+                    alert('留言提交成功！');
+                    
+                    // 重置表单
+                    this.reset();
+                    prizeInput.value = '';
+                    prizeResult.textContent = '';
+                    
+                    // 关闭模态框
+                    document.getElementById('modal').classList.remove('active');
+                } catch (error) {
+                    console.error('提交失败:', error);
+                    alert('提交失败，请稍后重试');
+                } finally {
+                    // 恢复按钮状态
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalText;
+                }
+            });
+            
+            // 初始化功能
+            drawHearts();
+            setupModal();
+            setupMusic();
+        });
+    </script>
+</body>
+</html>

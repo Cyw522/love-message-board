@@ -1,0 +1,4 @@
+# Prevent GitHub Pages from ignoring these files
+
+# Ensure these files are included
+!.nojekyll

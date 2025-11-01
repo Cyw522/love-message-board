@@ -1,0 +1,13 @@
+{
+  "name": "love-message-board",
+  "version": "1.0.0",
+  "description": "阿雯与阿常的留言板项目",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {},
+  "keywords": ["留言板", "love", "message"],
+  "author": "",
+  "license": "ISC"
+}
