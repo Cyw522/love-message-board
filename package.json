@@ -4,10 +4,17 @@
   "description": "阿雯与阿常的留言板项目",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "dependencies": {},
-  "keywords": ["留言板", "love", "message"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cyw522/love-message-board.git"
+  },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Cyw522/love-message-board/issues"
+  },
+  "homepage": "https://github.com/Cyw522/love-message-board#readme"
 }

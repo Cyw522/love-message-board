@@ -1,3 +1,94 @@
-# 音乐测试页面
-
-这个页面用于测试音乐播放功能。
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>音乐测试页面</h1>
+    <div class="controls">
+        <button id="playBtn1">播放音乐1</button>
+        <button id="stopBtn1">停止音乐1</button>
+        <br>
+        <button id="playBtn2">播放音乐2</button>
+        <button id="stopBtn2">停止音乐2</button>
+    </div>
+    
+    <p id="status">状态：就绪</p>
+    
+    <audio id="music1" preload="none">
+        <source src="https://github.com/Cyw522/love-message-board/releases/download/v1.0/%E6%81%8B%E4%BA%BA.mp3" type="audio/mpeg">
+        您的浏览器不支持音频元素。
+    </audio>
+    
+    <audio id="music2" preload="none">
+        <source src="https://github.com/Cyw522/love-message-board/releases/download/v1.0/%E6%98%A5%E5%A8%87%E4%B8%8E%E6%99%BA%E6%98%8E.mp3" type="audio/mpeg">
+        您的浏览器不支持音频元素。
+    </audio>
+    
+    <script>
+        const music1 = document.getElementById('music1');
+        const music2 = document.getElementById('music2');
+        const status = document.getElementById('status');
+        
+        function updateStatus(msg) {
+            status.textContent = `状态：${msg}`;
+            console.log(msg);
+        }
+        
+        document.getElementById('playBtn1').addEventListener('click', function() {
+            updateStatus('尝试播放音乐1...');
+            music1.play().then(() => {
+                updateStatus('音乐1播放成功');
+            }).catch(error => {
+                updateStatus(`音乐1播放失败: ${error.message}`);
+            });
+        });
+        
+        document.getElementById('stopBtn1').addEventListener('click', function() {
+            music1.pause();
+            music1.currentTime = 0;
+            updateStatus('音乐1已停止');
+        });
+        
+        document.getElementById('playBtn2').addEventListener('click', function() {
+            updateStatus('尝试播放音乐2...');
+            music2.play().then(() => {
+                updateStatus('音乐2播放成功');
+            }).catch(error => {
+                updateStatus(`音乐2播放失败: ${error.message}`);
+            });
+        });
+        
+        document.getElementById('stopBtn2').addEventListener('click', function() {
+            music2.pause();
+            music2.currentTime = 0;
+            updateStatus('音乐2已停止');
+        });
+    </script>
+</body>
+</html>
